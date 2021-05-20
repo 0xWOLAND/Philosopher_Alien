@@ -28,11 +28,11 @@ blob_img = pygame.image.load('img/Extra animations and enemies/Enemy sprites/gho
 # platform_x_img = pygame.image.load('img/platform_x.png')
 # platform_y_img = pygame.image.load('img/platform_y.png')
 lava_img = pygame.image.load('img/Base pack/Tiles/liquidLavaTop.png')
-# coin_img = pygame.image.load('img/coin.png')
+coin_img = pygame.image.load('img/Candy expansion/Tiles/cherry.png')
 exit_img = pygame.image.load('img/exit_btn.png')
 save_img = pygame.image.load('img/save_btn.png')
 load_img = pygame.image.load('img/load_btn.png')
-
+npc_img = pygame.image.load('img/guy1.png')
 
 #define game variables
 clicked = False
@@ -69,7 +69,6 @@ def draw_grid():
 		#horizontal lines
 		pygame.draw.line(screen, white, (0, c * tile_size), (screen_width, c * tile_size))
 
-
 def draw_world():
 	for row in range(20):
 		for col in range(20):
@@ -86,10 +85,10 @@ def draw_world():
 					#enemy blocks
 					img = pygame.transform.scale(blob_img, (tile_size, int(tile_size * 0.75)))
 					screen.blit(img, (col * tile_size, row * tile_size + (tile_size * 0.25)))
-				# if world_data[row][col] == 4:
-				# # 	#horizontally moving platform
-				# # 	img = pygame.transform.scale(platform_x_img, (tile_size, tile_size // 2))
-				# # 	screen.blit(img, (col * tile_size, row * tile_size))
+				if world_data[row][col] == 4:
+					#horizontally moving platform
+					img = pygame.transform.scale(npc_img, (tile_size, int(tile_size * 1.5)))
+					screen.blit(img, (col * tile_size, row * tile_size - (tile_size // 2)))
 				# # if world_data[row][col] == 5:
 				# # 	#vertically moving platform
 				# # 	img = pygame.transform.scale(platform_y_img, (tile_size, tile_size // 2))
