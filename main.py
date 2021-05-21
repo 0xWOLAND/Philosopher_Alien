@@ -29,6 +29,9 @@ exit_img = pygame.image.load('img/exit_btn.png')
 npc_img = pygame.image.load('img/guy1.png')
 book_img = pygame.image.load('img/book.png')
 done_img = pygame.image.load('img/done_img.png')
+
+# Boss Images
+
 run = True
 tile_size = 50
 game_over = 0
@@ -43,6 +46,7 @@ white = (255, 255, 255)
 paper = (241, 241, 212)
 black = (  0,   0,   0)
 gold =  (255, 215,   0)
+
 def get_information():
     info = []
     with open('info.txt', 'r') as file:
@@ -143,6 +147,37 @@ class Button():
         screen.blit(self.image, self.rect)
         return action
 
+class Boss(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.attack = []
+        self.index = 0
+        self.counter = 0
+        for i in range(18):
+            k = str(i + 1)
+            img_path = f'img/Skeleton/Attack/Skeleton Attack-{k}.png'
+            img_left = pygame.image.load(img_path)
+            img_left = pygame.transform.scale(img_left, (80, 80))
+            img_left = pygame.transform.flip(img_left, True, False)
+            self.attack.append(img_left)
+        
+        self.image = self.attack[self.index]
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+    def update(self):
+        attack_cooldown = 7
+        self.counter += 1
+        if self.counter == attack_cooldown:
+            bullet = Bullet(self.rect.centerx, self.rect.centery + 10, tile_size // 4, black, -1)
+            boss_bullet.add(bullet)
+            self.counter = 0
+        if self.counter % 2 == 0:
+            self.index = (self.index + 1) % len(self.attack)
+            self.image = self.attack[self.index]
+            screen.blit(self.image, self.rect)
+
 class Player():
     def __init__(self, x, y):
         self.reset(x,y)
@@ -177,8 +212,8 @@ class Player():
             if key[pygame.K_x]:
                 self.shoot_counter += 1
                 if self.shoot_counter  == shoot_cooldown:
-                    bullet = Bullet(self.rect.x, self.rect.y, tile_size // 4, gold, self.direction)
-                    bullet_group.add(bullet)
+                    bullet = Bullet(self.rect.centerx + 35 * self.direction, self.rect.centery, tile_size // 4, gold, self.direction)
+                    hero_bullet.add(bullet)
                     self.shoot_counter = 0
             if self.counter > walk_cooldown:
                 self.counter = 0
@@ -213,15 +248,15 @@ class Player():
                 #     game_over = -1
                 # if pygame.sprite.spritecollide(self, lava_group, False):
                 #     game_over = -1
-                if pygame.sprite.spritecollide(self, exit_group, False):
-                    game_over = 1
-                if pygame.sprite.spritecollide(self, npc_group, False) and not self.didMeetPerson:
-                    self.didMeetPerson = True
-                    showing_info = 0
+            if pygame.sprite.spritecollide(self, exit_group, False):
+                game_over = 1
+            if pygame.sprite.spritecollide(self, npc_group, False) and not self.didMeetPerson:
+                self.didMeetPerson = True
+                showing_info = 0
 
-                if pygame.sprite.spritecollide(self, book_group, False) and not self.didReadBook:
-                    self.didReadBook = True
-                    showing_info = 1
+            if pygame.sprite.spritecollide(self, book_group, False) and not self.didReadBook:
+                self.didReadBook = True
+                showing_info = 1
 
                 
             self.rect.x += dx
@@ -365,6 +400,10 @@ class World():
                     elif tile == 8:
                         exit = Exit(col_count * tile_size, row_count * tile_size - (tile_size // 2))
                         exit_group.add(exit)
+                    elif tile == 9:
+                        boss = Boss(col_count * tile_size - 30, row_count * (tile_size) - 30)
+                        boss_group.add(boss)
+                        print("HERE")
                 col_count += 1
             row_count += 1
     def draw(self):
@@ -380,11 +419,27 @@ class Bullet(pygame.sprite.Sprite):
         self.color = color
         self.direction = direction
         self.vel = 8 * direction
-    
+        self.isHero = color == gold
+        if self.isHero:
+            self.health = 100
+        else:
+            self.health = 100
+        self.rect = pygame.Rect((x, y), (2 * radius, 2 * radius))
+        self.rect.x = x
+        self.rect.y = y
     def draw(self, screen):
-        if 0 <= self.x and self.x <= WIDTH:
+        if self.isHero and pygame.sprite.spritecollide(self, boss_bullet, False):
+            self.health -= 100
+        elif not self.isHero and pygame.sprite.spritecollide(self, hero_bullet, False):
+            self.health -= 100
+
+        if 0 <= self.x and self.x <= WIDTH and self.health > 0:
             pygame.draw.circle(screen, self.color, (self.x + self.vel, self.y), self.radius)
             self.x += self.vel
+            self.rect.x = self.x
+        else:
+            self.kill()
+
 
 ghost_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
@@ -392,7 +447,9 @@ exit_group = pygame.sprite.Group()
 item_group = pygame.sprite.Group()
 npc_group = pygame.sprite.Group()
 book_group = pygame.sprite.Group()
-bullet_group = pygame.sprite.Group()
+hero_bullet = pygame.sprite.Group()
+boss_bullet = pygame.sprite.Group()
+boss_group = pygame.sprite.Group()
 score_item = Item(tile_size // 2, tile_size // 2, item_img)
 item_group.add(score_item)
 info = get_information()
@@ -436,9 +493,14 @@ while run:
         item_group.draw(screen)
         npc_group.draw(screen)
         book_group.draw(screen)
-        for bullet in bullet_group:
+        boss_group.draw(screen)
+        for bullet in hero_bullet:
+            bullet.draw(screen)
+        for bullet in boss_bullet:
             bullet.draw(screen)
         game_over, showing_info = player.update(game_over, showing_info)
+        for boss in boss_group:
+            boss.update()
         if game_over == -1:
             if restart_button.draw():
                 world_data = []

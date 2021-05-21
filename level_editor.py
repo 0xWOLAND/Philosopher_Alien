@@ -33,6 +33,7 @@ exit_img = pygame.image.load('img/exit_btn.png')
 save_img = pygame.image.load('img/save_btn.png')
 load_img = pygame.image.load('img/load_btn.png')
 npc_img = pygame.image.load('img/guy1.png')
+boss_img = pygame.image.load('img/Skeleton/Sprite Sheets/Idle/idle.png')
 
 #define game variables
 clicked = False
@@ -101,7 +102,13 @@ def draw_world():
 				if world_data[row][col] == 8:
 					img = pygame.transform.scale(exit_img, (tile_size, int(tile_size * 1.5)))
 					screen.blit(img, (col * tile_size, row * tile_size - (tile_size // 2)))
-
+				if world_data[row][col] == 8:
+					img = pygame.transform.scale(exit_img, (tile_size, int(tile_size * 1.5)))
+					screen.blit(img, (col * tile_size, row * tile_size - (tile_size // 2)))
+				if world_data[row][col] == 9:
+					img = pygame.transform.scale(boss_img, (tile_size, int(tile_size * 1.5)))
+					screen.blit(img, (col * tile_size, row * tile_size))
+				
 
 
 class Button():
@@ -183,12 +190,12 @@ while run:
 				#update tile value
 				if pygame.mouse.get_pressed()[0] == 1:
 					world_data[y][x] += 1
-					if world_data[y][x] > 8:
+					if world_data[y][x] > 9:
 						world_data[y][x] = 0
 				elif pygame.mouse.get_pressed()[2] == 1:
 					world_data[y][x] -= 1
 					if world_data[y][x] < 0:
-						world_data[y][x] = 8
+						world_data[y][x] = 9
 		if event.type == pygame.MOUSEBUTTONUP:
 			clicked = False
 		#up and down key presses to change level number
