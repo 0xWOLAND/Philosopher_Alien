@@ -27,13 +27,13 @@ item_img = pygame.image.load('img/lightbulb.png')
 start_img = pygame.image.load('img/start_btn.png')
 exit_img = pygame.image.load('img/exit_btn.png')
 npc_img = pygame.image.load('img/guy1.png')
-
+book_img = pygame.image.load('img/book.png')
 run = True
 tile_size = 50
 game_over = 0
 main_menu = True
-level = 0
-max_levels = 5
+level = 1
+max_levels = 6
 score = 0
 
 # Colors -->
@@ -50,6 +50,7 @@ def reset_level(level):
     exit_group.empty()
     npc_group.empty()
     item_group.empty()
+    book_group.empty()
     item_group.add(score_item)
     world_data = []
     pickle_in = open(f'level{level}_data', 'rb')
@@ -223,6 +224,14 @@ class Lava(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
+class Book(pygame.sprite.Sprite):
+    def __init__(self, x, y, img):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.transform.scale(img, (tile_size, tile_size))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
 class Item(pygame.sprite.Sprite):
     def __init__(self, x, y, img):
         pygame.sprite.Sprite.__init__(self)
@@ -267,6 +276,9 @@ class World():
                     elif tile == 4:
                         npc = NPC(col_count * tile_size, row_count * tile_size, npc_img, "Hello World!")
                         npc_group.add(npc)
+                    elif tile == 5:
+                        book = Book(col_count * tile_size, row_count * tile_size, book_img)
+                        book_group.add(book)
                     elif tile == 6:
                         lava = Lava(col_count * tile_size, row_count * tile_size + (tile_size // 2))
                         lava_group.add(lava)
@@ -287,7 +299,7 @@ lava_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
 item_group = pygame.sprite.Group()
 npc_group = pygame.sprite.Group()
-
+book_group = pygame.sprite.Group()
 score_item = Item(tile_size // 2, tile_size // 2, item_img)
 item_group.add(score_item)
 
@@ -324,6 +336,7 @@ while run:
         exit_group.draw(screen)
         item_group.draw(screen)
         npc_group.draw(screen)
+        book_group.draw(screen)
         game_over = player.update(game_over)
         if game_over == -1:
             if restart_button.draw():
