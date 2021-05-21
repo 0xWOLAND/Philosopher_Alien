@@ -28,7 +28,7 @@ blob_img = pygame.image.load('img/Extra animations and enemies/Enemy sprites/gho
 # platform_x_img = pygame.image.load('img/platform_x.png')
 # platform_y_img = pygame.image.load('img/platform_y.png')
 lava_img = pygame.image.load('img/Base pack/Tiles/liquidLavaTop.png')
-coin_img = pygame.image.load('img/Candy expansion/Tiles/cherry.png')
+coin_img = pygame.image.load('img/lightbulb.png')
 exit_img = pygame.image.load('img/exit_btn.png')
 save_img = pygame.image.load('img/save_btn.png')
 load_img = pygame.image.load('img/load_btn.png')
@@ -97,10 +97,9 @@ def draw_world():
 					#lava
 					img = pygame.transform.scale(lava_img, (tile_size, tile_size // 2))
 					screen.blit(img, (col * tile_size, row * tile_size + (tile_size // 2)))
-				# if world_data[row][col] == 7:
-					#coin
-					# img = pygame.transform.scale(coin_img, (tile_size // 2, tile_size // 2))
-					# screen.blit(img, (col * tile_size + (tile_size // 4), row * tile_size + (tile_size // 4)))
+				if world_data[row][col] == 7:
+					img = pygame.transform.scale(coin_img, (tile_size // 2, tile_size // 2))
+					screen.blit(img, (col * tile_size + (tile_size // 4), row * tile_size + (tile_size // 4)))
 				if world_data[row][col] == 8:
 					img = pygame.transform.scale(exit_img, (tile_size, int(tile_size * 1.5)))
 					screen.blit(img, (col * tile_size, row * tile_size - (tile_size // 2)))

@@ -20,15 +20,15 @@ grass_img = pygame.image.load('img/grass.png')
 ghost_img = pygame.image.load('img/Extra animations and enemies/Enemy sprites/ghost.png')
 liquid_lava_top_img = pygame.image.load('img/chains.png')
 restart_img = pygame.image.load('img/restart_btn.png')
-item_img = pygame.image.load('img/Candy expansion/Tiles/cherry.png')
+item_img = pygame.image.load('img/lightbulb.png')
 start_img = pygame.image.load('img/start_btn.png')
 exit_img = pygame.image.load('img/exit_btn.png')
 npc_img = pygame.image.load('img/guy1.png')
 tile_size = 50
 game_over = 0
 main_menu = True
-level = 4
-max_levels = 8
+level = 0
+max_levels = 5
 score = 0
 
 def reset_level(level):
@@ -36,7 +36,8 @@ def reset_level(level):
     ghost_group.empty()
     lava_group.empty()
     exit_group.empty()
-
+    npc_group.empty()
+    item_group.empty()
     world_data = []
     pickle_in = open(f'level{level}_data', 'rb')
     world_data = pickle.load(pickle_in)
@@ -128,10 +129,10 @@ class Player():
                         self.in_air = False
 
 
-                if pygame.sprite.spritecollide(self, ghost_group, False):
-                    game_over = -1
-                if pygame.sprite.spritecollide(self, lava_group, False):
-                    game_over = -1
+                # if pygame.sprite.spritecollide(self, ghost_group, False):
+                #     game_over = -1
+                # if pygame.sprite.spritecollide(self, lava_group, False):
+                #     game_over = -1
                 if pygame.sprite.spritecollide(self, exit_group, False):
                     game_over = 1
                 
