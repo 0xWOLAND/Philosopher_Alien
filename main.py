@@ -28,19 +28,21 @@ start_img = pygame.image.load('img/start_btn.png')
 exit_img = pygame.image.load('img/exit_btn.png')
 npc_img = pygame.image.load('img/guy1.png')
 book_img = pygame.image.load('img/book.png')
+done_img = pygame.image.load('img/done_img.png')
 run = True
 tile_size = 50
 game_over = 0
 main_menu = True
 showing_info = -1
-level = 1
-max_levels = 6
+level = 7
+max_levels = 7
 score = 0
 
 # Colors -->
 white = (255, 255, 255)
 paper = (241, 241, 212)
 black = (  0,   0,   0)
+gold =  (255, 215,   0)
 def get_information():
     info = []
     with open('info.txt', 'r') as file:
@@ -150,6 +152,7 @@ class Player():
         dx = 0
         dy = 0
         walk_cooldown = 5
+        shoot_cooldown = 5
         if game_over == 0:
             if key[pygame.K_SPACE] and not self.jumped and not self.in_air:
                 self.vel_y = -15
@@ -171,7 +174,12 @@ class Player():
                     self.image = self.images_right[self.index]
                 else:
                     self.image = self.images_left[self.index]
-
+            if key[pygame.K_x]:
+                self.shoot_counter += 1
+                if self.shoot_counter  == shoot_cooldown:
+                    bullet = Bullet(self.rect.x, self.rect.y, tile_size // 4, gold, self.direction)
+                    bullet_group.add(bullet)
+                    self.shoot_counter = 0
             if self.counter > walk_cooldown:
                 self.counter = 0
                 self.index += 1
@@ -213,7 +221,6 @@ class Player():
 
                 if pygame.sprite.spritecollide(self, book_group, False) and not self.didReadBook:
                     self.didReadBook = True
-                    print_text(info[level][0])
                     showing_info = 1
 
                 
@@ -259,6 +266,7 @@ class Player():
         self.in_air = True
         self.didReadBook = False
         self.didMeetPerson = False
+        self.shoot_counter = 0
 class NPC(pygame.sprite.Sprite):
     def __init__(self, x, y, img, text):
         pygame.sprite.Sprite.__init__(self)
@@ -363,12 +371,28 @@ class World():
         for tile in self.tile_list:
             screen.blit(tile[0], tile[1])
 
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, radius, color, direction):
+        pygame.sprite.Sprite.__init__(self)
+        self.x = x
+        self.y = y
+        self.radius = radius
+        self.color = color
+        self.direction = direction
+        self.vel = 8 * direction
+    
+    def draw(self, screen):
+        if 0 <= self.x and self.x <= WIDTH:
+            pygame.draw.circle(screen, self.color, (self.x + self.vel, self.y), self.radius)
+            self.x += self.vel
+
 ghost_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
 exit_group = pygame.sprite.Group()
 item_group = pygame.sprite.Group()
 npc_group = pygame.sprite.Group()
 book_group = pygame.sprite.Group()
+bullet_group = pygame.sprite.Group()
 score_item = Item(tile_size // 2, tile_size // 2, item_img)
 item_group.add(score_item)
 info = get_information()
@@ -380,7 +404,7 @@ world = World(world_data)
 restart_button = Button(WIDTH // 2 - 50, HEIGHT // 2 + 100, restart_img)
 start_button = Button(WIDTH // 2 - 350, HEIGHT // 2, start_img)
 exit_button = Button(WIDTH // 2 + 150, HEIGHT // 2, exit_img)
-close_button = Button(600, 300, restart_img)
+close_button = Button(805, 300, pygame.transform.scale(done_img, (tile_size, tile_size)))
 
 
 
@@ -395,7 +419,7 @@ while run:
         if start_button.draw():
             main_menu = False
     elif showing_info != -1:
-        print_text(info[level][showing_info])
+        print_text(info[level - 1][showing_info])
         if close_button.draw():
             showing_info = -1
     else:
@@ -412,6 +436,8 @@ while run:
         item_group.draw(screen)
         npc_group.draw(screen)
         book_group.draw(screen)
+        for bullet in bullet_group:
+            bullet.draw(screen)
         game_over, showing_info = player.update(game_over, showing_info)
         if game_over == -1:
             if restart_button.draw():
