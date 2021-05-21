@@ -32,12 +32,70 @@ run = True
 tile_size = 50
 game_over = 0
 main_menu = True
+showing_info = -1
 level = 1
 max_levels = 6
 score = 0
 
 # Colors -->
 white = (255, 255, 255)
+paper = (241, 241, 212)
+black = (  0,   0,   0)
+def get_information():
+    info = []
+    with open('info.txt', 'r') as file:
+        line = file.readline()
+        while line != '':
+            t = []
+            for word in line.split('|'):
+                t.append(word.replace('\n', ''))
+
+            info.append(t)
+            line = file.readline()
+    
+    return info
+def print_text(text, img = None):
+    font = font_score
+    colour = black
+    rect = pygame.draw.rect(screen, paper, pygame.Rect(100, 250, 800, 550))
+    x = rect.centerx
+    y = rect.centery
+    allowed_width = 600
+    words = text.split()
+
+    # now, construct lines out of these words
+    lines = []
+    while len(words) > 0:
+        # get as many words as will fit within allowed_width
+        line_words = []
+        while len(words) > 0:
+            line_words.append(words.pop(0))
+            fw, fh = font.size(' '.join(line_words + words[:1]))
+            if fw > allowed_width:
+                break
+
+        # add a line consisting of those words
+        line = ' '.join(line_words)
+        lines.append(line)
+
+    # now we've split our text into lines that fit into the width, actually
+    # render them
+
+    # we'll render each line below the last, so we need to keep track of
+    # the culmative height of the lines we've rendered so far
+    y_offset = 0
+    for line in lines:
+        fw, fh = font.size(line)
+
+        # (tx, ty) is the top-left of the font surface
+        tx = x - fw / 2
+        ty = y + y_offset
+
+        font_surface = font.render(line, True, colour)
+        screen.blit(font_surface, (tx, ty))
+
+        y_offset += fh
+            
 
 def draw_text(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
@@ -86,7 +144,7 @@ class Button():
 class Player():
     def __init__(self, x, y):
         self.reset(x,y)
-    def update(self, game_over):
+    def update(self, game_over, showing_info):
 
         key = pygame.key.get_pressed()
         dx = 0
@@ -149,6 +207,15 @@ class Player():
                 #     game_over = -1
                 if pygame.sprite.spritecollide(self, exit_group, False):
                     game_over = 1
+                if pygame.sprite.spritecollide(self, npc_group, False) and not self.didMeetPerson:
+                    self.didMeetPerson = True
+                    showing_info = 0
+
+                if pygame.sprite.spritecollide(self, book_group, False) and not self.didReadBook:
+                    self.didReadBook = True
+                    print_text(info[level][0])
+                    showing_info = 1
+
                 
             self.rect.x += dx
             self.rect.y += dy
@@ -161,7 +228,7 @@ class Player():
             self.rect.x = x
             self.rect.y = y + 5
         screen.blit(self.image, self.rect)
-        return game_over
+        return game_over, showing_info
     
     def reset(self, x, y):
         self.images_right = []
@@ -190,6 +257,8 @@ class Player():
         self.jumped = False
         self.direction = 1
         self.in_air = True
+        self.didReadBook = False
+        self.didMeetPerson = False
 class NPC(pygame.sprite.Sprite):
     def __init__(self, x, y, img, text):
         pygame.sprite.Sprite.__init__(self)
@@ -302,7 +371,7 @@ npc_group = pygame.sprite.Group()
 book_group = pygame.sprite.Group()
 score_item = Item(tile_size // 2, tile_size // 2, item_img)
 item_group.add(score_item)
-
+info = get_information()
 player = Player(100, HEIGHT - 110)
 world_data = []
 pickle_in = open(f'level{level}_data', 'rb')
@@ -311,18 +380,24 @@ world = World(world_data)
 restart_button = Button(WIDTH // 2 - 50, HEIGHT // 2 + 100, restart_img)
 start_button = Button(WIDTH // 2 - 350, HEIGHT // 2, start_img)
 exit_button = Button(WIDTH // 2 + 150, HEIGHT // 2, exit_img)
+close_button = Button(600, 300, restart_img)
 
 
 
 
 while run:
     clock.tick(fps)
+
     if main_menu:
         screen.blit(pygame.transform.scale(menu_bg_img, (WIDTH, HEIGHT)), (0,0))
         if exit_button.draw():
             run = False
         if start_button.draw():
             main_menu = False
+    elif showing_info != -1:
+        print_text(info[level][showing_info])
+        if close_button.draw():
+            showing_info = -1
     else:
         screen.blit(bg_img, (-450,0))
         world.draw()
@@ -337,7 +412,7 @@ while run:
         item_group.draw(screen)
         npc_group.draw(screen)
         book_group.draw(screen)
-        game_over = player.update(game_over)
+        game_over, showing_info = player.update(game_over, showing_info)
         if game_over == -1:
             if restart_button.draw():
                 world_data = []
@@ -355,7 +430,6 @@ while run:
                     world_data = []
                     world = reset_level(level)
                     game_over = 0
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
