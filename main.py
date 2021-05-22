@@ -37,7 +37,7 @@ tile_size = 50
 game_over = 0
 main_menu = True
 showing_info = -1
-level = 7
+level = 1
 max_levels = 7
 score = 0
 
@@ -46,7 +46,7 @@ white = (255, 255, 255)
 paper = (241, 241, 212)
 black = (  0,   0,   0)
 gold =  (255, 215,   0)
-
+purple = (75,0,130)
 def get_information():
     info = []
     with open('info.txt', 'r') as file:
@@ -170,7 +170,7 @@ class Boss(pygame.sprite.Sprite):
         attack_cooldown = 7
         self.counter += 1
         if self.counter == attack_cooldown:
-            bullet = Bullet(self.rect.centerx, self.rect.centery + 10, tile_size // 4, black, -1)
+            bullet = Bullet(self.rect.centerx, self.rect.centery + 10, tile_size // 4, purple, -1)
             boss_bullet.add(bullet)
             self.counter = 0
         if self.counter % 2 == 0:
@@ -181,7 +181,7 @@ class Boss(pygame.sprite.Sprite):
 class Player():
     def __init__(self, x, y):
         self.reset(x,y)
-    def update(self, game_over, showing_info):
+    def update(self, game_over, showing_info, score):
 
         key = pygame.key.get_pressed()
         dx = 0
@@ -189,10 +189,10 @@ class Player():
         walk_cooldown = 5
         shoot_cooldown = 5
         if game_over == 0:
-            if key[pygame.K_SPACE] and not self.jumped and not self.in_air:
+            if key[pygame.K_UP] and not self.jumped and not self.in_air:
                 self.vel_y = -15
                 self.jumped = True
-            if key[pygame.K_SPACE] == False:
+            if key[pygame.K_UP] == False:
                 self.jumped = False
             if key[pygame.K_LEFT]:
                 dx -= 5
@@ -209,12 +209,16 @@ class Player():
                     self.image = self.images_right[self.index]
                 else:
                     self.image = self.images_left[self.index]
-            if key[pygame.K_x]:
+            if key[pygame.K_SPACE]:
                 self.shoot_counter += 1
-                if self.shoot_counter  == shoot_cooldown:
+                if self.shoot_counter == shoot_cooldown and score > 0:
                     bullet = Bullet(self.rect.centerx + 35 * self.direction, self.rect.centery, tile_size // 4, gold, self.direction)
                     hero_bullet.add(bullet)
                     self.shoot_counter = 0
+                    score -= 1
+                elif self.shoot_counter == shoot_cooldown:
+                    self.shoot_counter = 0
+                    print(score, self.shoot_counter)
             if self.counter > walk_cooldown:
                 self.counter = 0
                 self.index += 1
@@ -244,10 +248,10 @@ class Player():
                         self.in_air = False
 
 
-                # if pygame.sprite.spritecollide(self, ghost_group, False):
-                #     game_over = -1
-                # if pygame.sprite.spritecollide(self, lava_group, False):
-                #     game_over = -1
+            if pygame.sprite.spritecollide(self, ghost_group, False):
+                game_over = -1
+            if pygame.sprite.spritecollide(self, lava_group, False):
+                game_over = -1
             if pygame.sprite.spritecollide(self, exit_group, False):
                 game_over = 1
             if pygame.sprite.spritecollide(self, npc_group, False) and not self.didMeetPerson:
@@ -270,7 +274,7 @@ class Player():
             self.rect.x = x
             self.rect.y = y + 5
         screen.blit(self.image, self.rect)
-        return game_over, showing_info
+        return game_over, showing_info, score
     
     def reset(self, x, y):
         self.images_right = []
@@ -328,6 +332,10 @@ class Enemy(pygame.sprite.Sprite):
         if abs(self.move_counter) > 50:
             self.move_direction *= -1
             self.move_counter *= -1
+    
+    def __del__(self):
+        self.kill()
+        pass
 class Lava(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -403,7 +411,6 @@ class World():
                     elif tile == 9:
                         boss = Boss(col_count * tile_size - 30, row_count * (tile_size) - 30)
                         boss_group.add(boss)
-                        print("HERE")
                 col_count += 1
             row_count += 1
     def draw(self):
@@ -428,18 +435,29 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
     def draw(self, screen):
+        game_state = 0
         if self.isHero and pygame.sprite.spritecollide(self, boss_bullet, False):
             self.health -= 100
         elif not self.isHero and pygame.sprite.spritecollide(self, hero_bullet, False):
             self.health -= 100
 
+        if self.isHero:
+            if pygame.sprite.spritecollide(self, ghost_group, True):
+                self.kill()
+            elif pygame.sprite.spritecollide(self, boss_group, True):
+                self.kill()
+                game_state = 2
+        elif not self.isHero and pygame.sprite.spritecollide(self, player, True):
+            self.kill()
+            game_state = -1
         if 0 <= self.x and self.x <= WIDTH and self.health > 0:
             pygame.draw.circle(screen, self.color, (self.x + self.vel, self.y), self.radius)
             self.x += self.vel
             self.rect.x = self.x
         else:
             self.kill()
-
+        
+        return game_state
 
 ghost_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
@@ -480,7 +498,7 @@ while run:
         if close_button.draw():
             showing_info = -1
     else:
-        screen.blit(bg_img, (-450,0))
+        screen.blit(bg_img, (0,0))
         world.draw()
         if game_over == 0:
             ghost_group.update()
@@ -494,11 +512,12 @@ while run:
         npc_group.draw(screen)
         book_group.draw(screen)
         boss_group.draw(screen)
-        for bullet in hero_bullet:
-            bullet.draw(screen)
+        game_over = 0
         for bullet in boss_bullet:
-            bullet.draw(screen)
-        game_over, showing_info = player.update(game_over, showing_info)
+            game_over = bullet.draw(screen)
+        for bullet in hero_bullet:
+            game_over = bullet.draw(screen)
+        game_over, showing_info, score = player.update(game_over, showing_info, score)
         for boss in boss_group:
             boss.update()
         if game_over == -1:
@@ -508,16 +527,18 @@ while run:
                 game_over = 0
         if game_over == 1:
             level += 1
+            if level == 3 or level == 4:
+                bg_img = pygame.image.load('img/sky2.jpg')
+            elif level == 5 or level == 6:
+                bg_img = pygame.image.load('img/sky3.jpg')
+            elif level == 7:
+                bg_img = pygame.image.load('img/sky4.png')    
             if level <= max_levels:
                 world_data = []
                 world = reset_level(level)
                 game_over = 0
-            else:
-                if restart_button.draw():
-                    level = 1
-                    world_data = []
-                    world = reset_level(level)
-                    game_over = 0
+        if game_over == 2:
+            print("Game over!")
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
