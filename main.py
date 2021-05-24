@@ -56,16 +56,14 @@ purple = (75, 0, 130)
 
 def get_information():
     info = []
-    with open('info.txt', 'r') as file:
-        line = file.readline()
-        while line != '':
-            t = []
-            for word in line.split('|'):
-                t.append(word.replace('\n', ''))
-
-            info.append(t)
-            line = file.readline()
-
+    for i in range(1, 7):
+        t = []
+        with open(f'Info/Video Game Info/P{i}.txt') as a:
+            t.append(a.readlines())
+        with open(f'Info/Video Game Info/Ph{i}.txt') as b:
+            t.append(b.readlines())
+        print(t)
+        info.append(t)
     return info
 
 
@@ -539,7 +537,7 @@ while run:
         if start_button.draw():
             main_menu = False
     elif showing_info != -1:
-        print_text(info[level - 1][showing_info], 100, 250, 800, 550)
+        print_text(str(info[level - 1][showing_info][0]), 100, 250, 800, 550)
         if close_button.draw():
             showing_info = -1
     else:
