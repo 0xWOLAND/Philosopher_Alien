@@ -67,15 +67,14 @@ def get_information():
     return info
 
 
-def print_text(text, x, y, width, height, img=None):
+def print_text(text, px, py, width, height, img=None):
     font = font_score
     colour = black
-    rect = pygame.draw.rect(screen, paper, pygame.Rect(x, y, width, height))
-    x = rect.centerx
+    rect = pygame.draw.rect(screen, paper, pygame.Rect(px, py, width, height))
+    x = rect.centerx + 150
     y = rect.centery
-    allowed_width = 600
+    allowed_width = 400
     words = text.split()
-
     # now, construct lines out of these words
     lines = []
     while len(words) > 0:
@@ -97,6 +96,7 @@ def print_text(text, x, y, width, height, img=None):
     # we'll render each line below the last, so we need to keep track of
     # the culmative height of the lines we've rendered so far
     y_offset = 0
+    y -= ((fh * len(lines)) // 2)
     for line in lines:
         fw, fh = font.size(line)
 
@@ -109,6 +109,7 @@ def print_text(text, x, y, width, height, img=None):
 
         y_offset += fh
 
+    screen.blit(img, (px + 50, y - img.get_height() // 2))
 
 def draw_text(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
@@ -261,10 +262,10 @@ class Player():
                         self.vel_y = 0
                         self.in_air = False
 
-            if pygame.sprite.spritecollide(self, ghost_group, False):
-                game_over = -1
-            if pygame.sprite.spritecollide(self, lava_group, False):
-                game_over = -1
+            # if pygame.sprite.spritecollide(self, ghost_group, False):
+            #     game_over = -1
+            # if pygame.sprite.spritecollide(self, lava_group, False):
+            #     game_over = -1
             if pygame.sprite.spritecollide(self, exit_group, False):
                 game_over = 1
             if pygame.sprite.spritecollide(self, npc_group, False) and not self.didMeetPerson:
@@ -537,7 +538,12 @@ while run:
         if start_button.draw():
             main_menu = False
     elif showing_info != -1:
-        print_text(str(info[level - 1][showing_info][0]), 100, 250, 800, 550)
+        if showing_info == 0:
+            img = pygame.image.load(f'Portraits/pic{level}.jpg')
+        else:
+            img = pygame.image.load(f'Portraits/book{level}.jpg')
+        img = pygame.transform.smoothscale(img, (200, 250))
+        print_text(str(info[level - 1][showing_info][0]), 100, 250, 800, 550, img)
         if close_button.draw():
             showing_info = -1
     else:
@@ -575,9 +581,9 @@ while run:
                 game_over = 0
         if game_over == 1:
             level += 1
-            if level == 3 or level == 4:
+            if level == 3:
                 bg_img = pygame.image.load('img/sky2.jpg')
-            elif level == 5 or level == 6:
+            elif level == 4 or level == 5 or level == 6:
                 bg_img = pygame.image.load('img/sky3.jpg')
             elif level == 7:
                 bg_img = pygame.image.load('img/sky4.png')
@@ -591,7 +597,7 @@ while run:
             bg_img = pygame.transform.scale(
                 bg_img, (WIDTH, bg_img.get_height()))
             screen.blit(bg_img, (0, 0))
-            print_text("Where do you stand?", 20, 700, 960, 250)
+            draw_text("Where do you stand?", font_score, black, 20, 700)
             if info_button.draw():
                 game_over = 3
         elif game_over == 3:
