@@ -66,6 +66,8 @@ def get_information():
     return info
 
 
+
+
 def print_text(text, px, py, width, height, img=None):
     font = font_score
     colour = black
@@ -596,7 +598,7 @@ while run:
             bg_img = pygame.transform.scale(
                 bg_img, (WIDTH, bg_img.get_height()))
             screen.blit(bg_img, (0, 0))
-            draw_text("Where do you stand?", font_score, black, 20, 700)
+            draw_text("Where do you stand?", font_score, black, 450, 700)
             if info_button.draw():
                 game_over = 3
         elif game_over == 3:
