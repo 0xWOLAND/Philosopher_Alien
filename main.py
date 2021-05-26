@@ -44,7 +44,7 @@ main_menu = True
 showing_info = -1
 level = 1
 max_levels = 7
-score = 50
+score = 0
 
 # Colors -->
 white = (255, 255, 255)
@@ -62,7 +62,6 @@ def get_information():
             t.append(a.readlines())
         with open(f'Info/Video Game Info/Ph{i}.txt') as b:
             t.append(b.readlines())
-        print(t)
         info.append(t)
     return info
 
@@ -262,10 +261,10 @@ class Player():
                         self.vel_y = 0
                         self.in_air = False
 
-            # if pygame.sprite.spritecollide(self, ghost_group, False):
-            #     game_over = -1
-            # if pygame.sprite.spritecollide(self, lava_group, False):
-            #     game_over = -1
+            if pygame.sprite.spritecollide(self, ghost_group, False):
+                game_over = -1
+            if pygame.sprite.spritecollide(self, lava_group, False):
+                game_over = -1
             if pygame.sprite.spritecollide(self, exit_group, False):
                 game_over = 1
             if pygame.sprite.spritecollide(self, npc_group, False) and not self.didMeetPerson:
