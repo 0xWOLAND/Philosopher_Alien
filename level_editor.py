@@ -25,14 +25,15 @@ bg_img = pygame.transform.scale(bg_img, (screen_width, screen_height - margin))
 dirt_img = pygame.image.load('img/dirt.png')
 grass_img = pygame.image.load('img/grass.png')
 blob_img = pygame.image.load('img/Extra animations and enemies/Enemy sprites/ghost.png')
-# platform_x_img = pygame.image.load('img/platform_x.png')
+book_img = pygame.image.load('img/book.png')
 # platform_y_img = pygame.image.load('img/platform_y.png')
 lava_img = pygame.image.load('img/Base pack/Tiles/liquidLavaTop.png')
-# coin_img = pygame.image.load('img/coin.png')
+coin_img = pygame.image.load('img/lightbulb.png')
 exit_img = pygame.image.load('img/exit_btn.png')
 save_img = pygame.image.load('img/save_btn.png')
 load_img = pygame.image.load('img/load_btn.png')
-
+npc_img = pygame.image.load('img/guy1.png')
+boss_img = pygame.image.load('img/Skeleton/Sprite Sheets/Idle/idle.png')
 
 #define game variables
 clicked = False
@@ -69,7 +70,6 @@ def draw_grid():
 		#horizontal lines
 		pygame.draw.line(screen, white, (0, c * tile_size), (screen_width, c * tile_size))
 
-
 def draw_world():
 	for row in range(20):
 		for col in range(20):
@@ -86,26 +86,29 @@ def draw_world():
 					#enemy blocks
 					img = pygame.transform.scale(blob_img, (tile_size, int(tile_size * 0.75)))
 					screen.blit(img, (col * tile_size, row * tile_size + (tile_size * 0.25)))
-				# if world_data[row][col] == 4:
-				# # 	#horizontally moving platform
-				# # 	img = pygame.transform.scale(platform_x_img, (tile_size, tile_size // 2))
-				# # 	screen.blit(img, (col * tile_size, row * tile_size))
-				# # if world_data[row][col] == 5:
-				# # 	#vertically moving platform
-				# # 	img = pygame.transform.scale(platform_y_img, (tile_size, tile_size // 2))
-				# # 	screen.blit(img, (col * tile_size, row * tile_size))
+				if world_data[row][col] == 4:
+					img = pygame.transform.scale(npc_img, (tile_size, int(tile_size * 1.5)))
+					screen.blit(img, (col * tile_size, row * tile_size - (tile_size // 2)))
+				if world_data[row][col] == 5:
+					img = pygame.transform.scale(book_img, (tile_size, tile_size))
+					screen.blit(img, (col * tile_size, row * tile_size))
 				if world_data[row][col] == 6:
 					#lava
 					img = pygame.transform.scale(lava_img, (tile_size, tile_size // 2))
 					screen.blit(img, (col * tile_size, row * tile_size + (tile_size // 2)))
-				# if world_data[row][col] == 7:
-					#coin
-					# img = pygame.transform.scale(coin_img, (tile_size // 2, tile_size // 2))
-					# screen.blit(img, (col * tile_size + (tile_size // 4), row * tile_size + (tile_size // 4)))
+				if world_data[row][col] == 7:
+					img = pygame.transform.scale(coin_img, (tile_size // 2, tile_size // 2))
+					screen.blit(img, (col * tile_size + (tile_size // 4), row * tile_size + (tile_size // 4)))
 				if world_data[row][col] == 8:
 					img = pygame.transform.scale(exit_img, (tile_size, int(tile_size * 1.5)))
 					screen.blit(img, (col * tile_size, row * tile_size - (tile_size // 2)))
-
+				if world_data[row][col] == 8:
+					img = pygame.transform.scale(exit_img, (tile_size, int(tile_size * 1.5)))
+					screen.blit(img, (col * tile_size, row * tile_size - (tile_size // 2)))
+				if world_data[row][col] == 9:
+					img = pygame.transform.scale(boss_img, (tile_size, int(tile_size * 1.5)))
+					screen.blit(img, (col * tile_size, row * tile_size))
+				
 
 
 class Button():
@@ -187,12 +190,12 @@ while run:
 				#update tile value
 				if pygame.mouse.get_pressed()[0] == 1:
 					world_data[y][x] += 1
-					if world_data[y][x] > 8:
+					if world_data[y][x] > 9:
 						world_data[y][x] = 0
 				elif pygame.mouse.get_pressed()[2] == 1:
 					world_data[y][x] -= 1
 					if world_data[y][x] < 0:
-						world_data[y][x] = 8
+						world_data[y][x] = 9
 		if event.type == pygame.MOUSEBUTTONUP:
 			clicked = False
 		#up and down key presses to change level number
