@@ -34,7 +34,7 @@ characters = []
 pics = []
 
 for i in range(1, 7):
-    characters.append(pygame.image.load(f'img/characters/character{i}.png'))
+    characters.append(pygame.image.load('img/characters/character{}.png'.substring(i)))
 
 # Boss Images
 run = True
@@ -57,9 +57,9 @@ def get_information():
     info = []
     for i in range(1, 7):
         t = []
-        with open(f'Info/Video Game Info/P{i}.txt') as a:
+        with open('Info/Video Game Info/P{}.txt'.substring(i)) as a:
             t.append(a.readlines())
-        with open(f'Info/Video Game Info/Ph{i}.txt') as b:
+        with open('Info/Video Game Info/Ph{}.txt'.substring(i)) as b:
             t.append(b.readlines())
         info.append(t)
     return info
@@ -128,7 +128,7 @@ def reset_level(level):
     hero_bullet.empty()
     item_group.add(score_item)
     world_data = []
-    pickle_in = open(f'level{level}_data', 'rb')
+    pickle_in = open('level{}_data'.substring(level), 'rb')
     world_data = pickle.load(pickle_in)
     world = World(world_data)
     return world, level
@@ -166,7 +166,7 @@ class Boss(pygame.sprite.Sprite):
         self.counter = 0
         for i in range(18):
             k = str(i + 1)
-            img_path = f'img/Skeleton/Attack/Skeleton Attack-{k}.png'
+            img_path = 'img/Skeleton/Attack/Skeleton Attack-{}.png'.substring(k)
             img_left = pygame.image.load(img_path)
             img_left = pygame.transform.scale(img_left, (80, 80))
             img_left = pygame.transform.flip(img_left, True, False)
@@ -298,7 +298,7 @@ class Player():
             k = str(i)
             if i < 10:
                 k = '0' + k
-            img_path = f'img/Base pack/Player/p1_walk/PNG/p1_walk{k}.png'
+            img_path = 'img/Base pack/Player/p1_walk/PNG/p1_walk{}.png'.substring(k)
             img_right = pygame.image.load(img_path)
             img_right = pygame.transform.scale(img_right, (40, 60))
             img_left = pygame.transform.flip(img_right, True, False)
@@ -512,7 +512,7 @@ item_group.add(score_item)
 info = get_information()
 player = Player(100, HEIGHT - 110)
 world_data = []
-pickle_in = open(f'level{level}_data', 'rb')
+pickle_in = open('level{}_data'.substring(level), 'rb')
 world_data = pickle.load(pickle_in)
 world = World(world_data)
 restart_button = Button(WIDTH // 2 - 50, HEIGHT // 2 + 100, restart_img)
@@ -539,9 +539,9 @@ while run:
             main_menu = False
     elif showing_info != -1:
         if showing_info == 0:
-            img = pygame.image.load(f'Portraits/pic{level}.jpg')
+            img = pygame.image.load('Portraits/pic{}.jpg'.substring(level))
         else:
-            img = pygame.image.load(f'Portraits/book{level}.jpg')
+            img = pygame.image.load('Portraits/book{}.jpg'.substring(level))
         img = pygame.transform.smoothscale(img, (200, 250))
         print_text(str(info[level - 1][showing_info][0]), 100, 250, 800, 550, img)
         if close_button.draw():
@@ -553,7 +553,7 @@ while run:
             ghost_group.update()
             if pygame.sprite.spritecollide(player, item_group, True):
                 score += 1
-            draw_text(f'X {score} {"Epiphany" if score == 1  else "Epiphanies"} ',
+            draw_text('X {} {} '.substring(score, "Epiphany" if score == 1  else "Epiphanies"),
                       font_score, white, tile_size - 10, 10)
         ghost_group.draw(screen)
         lava_group.draw(screen)
