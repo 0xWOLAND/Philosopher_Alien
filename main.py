@@ -39,7 +39,6 @@ for i in range(1, 7):
 # Boss Images
 run = True
 tile_size = 50
-game_over = 0
 main_menu = True
 showing_info = -1
 level = 1
@@ -524,7 +523,7 @@ close_button = Button(805, 300, pygame.transform.scale(
 info_button = Button(450, 875, pygame.transform.scale(
     done_img, (tile_size, tile_size)))
 game_over_screen = Button(0, 0, pygame.transform.scale(
-    pygame.image.load('img/game_over.jpg'), (WIDTH, HEIGHT)))
+    pygame.image.load('works_cited.jpg'), (WIDTH, HEIGHT)))
 
 game_over = 0
 
