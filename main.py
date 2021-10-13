@@ -525,7 +525,7 @@ info_button = Button(450, 875, pygame.transform.scale(
 game_over_screen = Button(0, 0, pygame.transform.scale(
     pygame.image.load('works_cited.jpg'), (WIDTH, HEIGHT)))
 
-game_over = 0
+game_over = 3
 
 while run:
     clock.tick(fps)
